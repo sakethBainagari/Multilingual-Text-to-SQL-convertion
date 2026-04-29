@@ -73,10 +73,4 @@ pytest
 - Adjust `DB_PATH` to use a different SQLite database
 - Tune `SIMILARITY_THRESHOLD` to make cached query matching stricter or looser
 
-## Contributing
-
-1. Create a feature branch
-2. Make focused changes
-3. Add or update tests where needed
-4. Open a pull request with a short summary
 
