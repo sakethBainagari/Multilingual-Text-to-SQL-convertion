@@ -1,0 +1,44 @@
+# ─── Environment & secrets ───
+.env
+*.env
+
+# ─── Python ───
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# ─── IDE ───
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── OS ───
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Data / uploads ───
+data/uploads/*.db
+data/uploads/*.sqlite
+data/uploads/*.sqlite3
+data/query_cache.faiss
+data/query_metadata.json
+
+# ─── Logs & outputs ───
+logs/
+visualizations/
+*.log
+
+# ─── Misc ───
+*.bak
+*.tmp
+interview.md

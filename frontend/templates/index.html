@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Advanced NL-to-SQL System - v2.0</title>
+
+    <!-- Plotly CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+    <!-- Application CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>NL-to-SQL System</h1>
+            <p>Intelligent query processing with similarity matching and model selection</p>
+
+            <!-- Database Selector -->
+            <div class="db-selector-container">
+                <div class="db-current" id="dbCurrent">
+                    <span class="db-icon">🗄️</span>
+                    <span class="db-name" id="dbCurrentName">Default Database</span>
+                    <span class="db-tables" id="dbCurrentTables">(Loading...)</span>
+                </div>
+                <button class="db-btn" onclick="openDbModal()">📁 Change Database</button>
+            </div>
+        </div>
+
+        <!-- Database Modal -->
+        <div class="db-modal" id="dbModal">
+            <div class="db-modal-content">
+                <div class="db-modal-header">
+                    <h2>🗄️ Database Manager</h2>
+                    <button class="db-modal-close" onclick="closeDbModal()">&times;</button>
+                </div>
+                <div class="db-modal-body">
+                    <!-- Connect by Path -->
+                    <div style="background:#e8f5e9;border:2px solid #4caf50;border-radius:10px;padding:20px;margin-bottom:20px;">
+                        <h3 style="color:#2e7d32;margin-bottom:10px;">📂 Connect by File Path (Recommended)</h3>
+                        <p style="color:#666;font-size:14px;margin-bottom:15px;">Enter the full path to your .db file. Changes saved directly.</p>
+                        <div style="display:flex;gap:10px;">
+                            <input type="text" id="dbPathInput" placeholder="e.g., C:\Users\YourName\Desktop\sample.db"
+                                   style="flex:1;padding:12px;border:2px solid #4caf50;border-radius:6px;font-size:14px;">
+                            <button onclick="connectByPath()" class="db-upload-btn" style="background:#4caf50;">Connect</button>
+                        </div>
+                    </div>
+
+                    <!-- Upload Zone -->
+                    <div class="db-upload-zone" id="dbUploadZone" onclick="document.getElementById('dbFileInput').click()">
+                        <div class="upload-icon">📤</div>
+                        <h3>Upload SQLite Database (Creates Copy)</h3>
+                        <p>Drag &amp; drop your .db file here or click to browse</p>
+                        <p style="color:#ff9800;font-size:12px;">⚠️ Creates a copy. Use "Connect by Path" to edit the original.</p>
+                        <button class="db-upload-btn" type="button">Choose File</button>
+                        <p class="file-types">Supported: .db, .sqlite, .sqlite3</p>
+                        <input type="file" id="dbFileInput" class="db-upload-input" accept=".db,.sqlite,.sqlite3">
+                    </div>
+
+                    <!-- Upload Progress -->
+                    <div class="db-upload-progress" id="dbUploadProgress">
+                        <span id="dbUploadStatus">Uploading database...</span>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill" id="dbProgressFill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Database List -->
+                    <div class="db-list-section">
+                        <h3>📋 Available Databases</h3>
+                        <div class="db-list" id="dbList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="workflow-container">
+
+                <!-- Step 1: Query Input -->
+                <div class="workflow-step active" id="step1">
+                    <div class="step-header">
+                        <div class="step-number" id="step1-number">1</div>
+                        <div>Enter Your Natural Language Query</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="voice-help">
+                            <strong>🎤 Voice Input Available!</strong>
+                            Click the microphone and speak in Telugu, Hindi, or English.
+                        </div>
+                        <div class="voice-controls">
+                            <button id="micButton" class="mic-button" title="Click to start voice input">🎤</button>
+                            <select id="languageSelector" class="language-selector">
+                                <option value="te-IN">తెలుగు (Telugu)</option>
+                                <option value="hi-IN">हिन्दी (Hindi)</option>
+                                <option value="en-US" selected>English</option>
+                            </select>
+                            <div id="voiceStatus" class="voice-status"></div>
+                        </div>
+                        <div id="voiceTranscript" class="voice-transcript"></div>
+                        <div class="query-input-group">
+                            <label for="naturalQuery">What would you like to know about your data?</label>
+                            <textarea id="naturalQuery" class="query-input"
+                                placeholder="e.g., 'Show all employees with salary > 70000' OR click 🎤 to speak"></textarea>
+                        </div>
+                        <button id="checkSimilarityBtn" class="btn">🔍 Check Similarity &amp; Process</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Similarity Check -->
+                <div class="workflow-step" id="step2">
+                    <div class="step-header">
+                        <div class="step-number" id="step2-number">2</div>
+                        <div>Similarity Check Results</div>
+                    </div>
+                    <div class="step-content">
+                        <div id="similarityResults"></div>
+                        <div id="similarityActions" style="display:none;">
+                            <button id="useSimilarBtn" class="btn btn-success">⚡ Use Cached Query (Instant)</button>
+                            <button id="proceedToModelBtn" class="btn btn-warning">🤖 Generate New SQL</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Model Selection -->
+                <div class="workflow-step" id="step3">
+                    <div class="step-header">
+                        <div class="step-number" id="step3-number">3</div>
+                        <div>Select AI Model for SQL Generation</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="llm-choice-container" id="llmChoiceContainer">
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:20px;">
+                                <!-- Gemini -->
+                                <div style="border:2px solid #667eea;border-radius:10px;padding:20px;background:linear-gradient(135deg,#f8f9ff,#e3f2fd);">
+                                    <h3 style="color:#667eea;margin-bottom:15px;">🤖 Gemini</h3>
+                                    <p style="color:#666;font-size:0.9em;margin-bottom:15px;">Google's Gemini 2.0 Flash Model</p>
+                                    <button id="generateSqlBtnGemini" class="btn btn-success" style="width:100%;">Generate SQL with Gemini</button>
+                                </div>
+                                <!-- Ollama -->
+                                <div style="border:2px solid #764ba2;border-radius:10px;padding:20px;background:linear-gradient(135deg,#fef5ff,#f3e5f5);">
+                                    <h3 style="color:#764ba2;margin-bottom:15px;">🤖 Ollama Model</h3>
+                                    <select id="ollamaModelSelect" style="width:100%;padding:10px;margin-bottom:15px;border:2px solid #764ba2;border-radius:5px;font-size:1em;">
+                                        <option value="">Select Ollama Model</option>
+                                        <option value="gpt-oss:20b">gpt-oss:20b (13 GB)</option>
+                                        <option value="gemma:2b">gemma:2b (1.7 GB)</option>
+                                        <option value="phi3:mini">phi3:mini (2.2 GB)</option>
+                                        <option value="tinyllama:1.1b">tinyllama:1.1b (637 MB)</option>
+                                        <option value="llama3.2:1b">llama3.2:1b (1.3 GB)</option>
+                                        <option value="phi4-mini:latest">phi4-mini:latest (2.5 GB)</option>
+                                        <option value="mistral:latest">mistral:latest (4.1 GB)</option>
+                                        <option value="llama2:latest">llama2:latest (3.8 GB)</option>
+                                    </select>
+                                    <button id="generateSqlBtnOllama" class="btn btn-success" style="width:100%;" disabled>Generate SQL with Ollama</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: SQL Review -->
+                <div class="workflow-step" id="step4">
+                    <div class="step-header">
+                        <div class="step-number" id="step4-number">4</div>
+                        <div>Generated SQL Query</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="loading" id="loadingSQL">Generating SQL query...</div>
+                        <div id="sqlResults">
+                            <div id="generatedSQL" class="sql-display"></div>
+                            <div id="sqlActions" style="display:none;">
+                                <button id="executeSqlBtn" class="btn btn-success">▶️ Execute Query</button>
+                                <button id="editSqlBtn" class="btn btn-warning">✏️ Edit SQL</button>
+                                <button id="startOverBtn" class="btn btn-danger">🔄 Start Over</button>
+                                <div style="margin-top:15px;">
+                                    <label><input type="checkbox" id="visualizeCheck"> 📊 Create Visualization</label>
+                                    <select id="chartType" style="margin-left:10px;padding:5px;">
+                                        <option value="">Auto-detect</option>
+                                        <option value="bar">Bar Chart</option>
+                                        <option value="line">Line Chart</option>
+                                        <option value="pie">Pie Chart</option>
+                                        <option value="histogram">Histogram</option>
+                                        <option value="scatter">Scatter Plot</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Results -->
+                <div class="workflow-step" id="step5">
+                    <div class="step-header">
+                        <div class="step-number" id="step5-number">5</div>
+                        <div>Query Results</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="loading" id="loadingExecution">Executing query...</div>
+                        <div id="executionResults"></div>
+                    </div>
+                </div>
+
+                <!-- Query History -->
+                <div id="historyPanel" class="sample-queries" style="margin-top:10px;"></div>
+
+                <!-- Sample Queries -->
+                <div class="sample-queries">
+                    <h3>💡 Sample Queries - Click to try:</h3>
+                    <div class="sample-query" onclick="setQuery('Create a table with name students and add 10 students roll number 1 to 10 and add some random marks to that students')">
+                        Create a table with name students and add 10 students&hellip;
+                    </div>
+                    <div class="sample-query" onclick="setQuery('Show all employees with salary greater than 70000')">
+                        Show all employees with salary greater than 70000
+                    </div>
+                    <div class="sample-query" onclick="setQuery('Find average salary by department')">
+                        Find average salary by department
+                    </div>
+                    <div class="sample-query" onclick="setQuery('List all projects with status In Progress')">
+                        List all projects with status 'In Progress'
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Schema Viewer Button -->
+    <button class="schema-fab" id="schemaFab" onclick="toggleSchemaPanel()" title="View Database Schema">
+        📋
+    </button>
+
+    <!-- Schema Panel -->
+    <div class="schema-panel" id="schemaPanel">
+        <div class="schema-panel-header">
+            <h3>📋 Database Schema</h3>
+            <button class="schema-panel-close" onclick="toggleSchemaPanel()">&times;</button>
+        </div>
+        <div class="schema-panel-body" id="schemaPanelBody">
+            <div class="schema-loading">Loading schema...</div>
+        </div>
+    </div>
+
+    <!-- Application JS modules (order matters) -->
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/voice.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/database.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/history.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/workflow.js') }}"></script>
+</body>
+</html>

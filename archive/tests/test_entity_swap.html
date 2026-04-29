@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Entity Swapping</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .result { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #fee; }
+        .success { background: #efe; }
+        button { padding: 10px 20px; margin: 10px 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test Entity Swapping API</h1>
+    
+    <h2>Test 1: Basic Similarity Check</h2>
+    <button onclick="testSimilarity()">Test Similarity Check</button>
+    <div id="similarity-result" class="result"></div>
+    
+    <h2>Test 2: Entity Swapping</h2>
+    <button onclick="testEntitySwap()">Test Entity Swapping</button>
+    <div id="swap-result" class="result"></div>
+    
+    <h2>Debug Info</h2>
+    <div id="debug" class="result"></div>
+    
+    <script>
+        const API_BASE = 'http://localhost:5000';
+        
+        function log(message) {
+            const debug = document.getElementById('debug');
+            debug.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+            console.log(message);
+        }
+        
+        async function testSimilarity() {
+            const resultDiv = document.getElementById('similarity-result');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result';
+            
+            try {
+                log('Sending similarity check request...');
+                
+                const response = await fetch(`${API_BASE}/api/similarity-check`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        query: 'Show all employees with salary greater than 40000'
+                    })
+                });
+                
+                log(`Response status: ${response.status}`);
+                
+                const result = await response.json();
+                log(`Result: ${JSON.stringify(result, null, 2)}`);
+                
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Success!</h3>
+                        <p>Found ${result.count} similar queries</p>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `<h3>❌ Error</h3><p>${result.error}</p>`;
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h3>❌ Error</h3><p>${error.message}</p>`;
+            }
+        }
+        
+        async function testEntitySwap() {
+            const resultDiv = document.getElementById('swap-result');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result';
+            
+            try {
+                log('Sending entity swap request...');
+                
+                const response = await fetch(`${API_BASE}/api/swap-entities`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        original_query: 'Show all employees with salary greater than 70000',
+                        new_query: 'Show all employees with salary greater than 40000',
+                        original_sql: 'SELECT * FROM employees WHERE salary > 70000;'
+                    })
+                });
+                
+                log(`Response status: ${response.status}`);
+                
+                const result = await response.json();
+                log(`Result: ${JSON.stringify(result, null, 2)}`);
+                
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Success!</h3>
+                        <p><strong>Original SQL:</strong> ${result.original_sql}</p>
+                        <p><strong>Adapted SQL:</strong> ${result.adapted_sql}</p>
+                        <p><strong>Swapped:</strong> ${result.swapped}</p>
+                        <p><strong>Message:</strong> ${result.message}</p>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `<h3>❌ Error</h3><p>${result.error}</p>`;
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h3>❌ Error</h3><p>${error.message}</p>`;
+            }
+        }
+        
+        log('Test page loaded');
+    </script>
+</body>
+</html>

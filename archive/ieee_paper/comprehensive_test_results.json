@@ -1,0 +1,50 @@
+{
+  "timestamp": "2026-01-01T14:14:03.462748",
+  "total_queries": 100,
+  "success_rate": "100.0%",
+  "cache_hit_rate": "8.0%",
+  "avg_latency_ms": 2135.02,
+  "by_language": {
+    "English": {
+      "total": 50,
+      "success": 50,
+      "cache_hits": 6,
+      "success_rate": "100.0%",
+      "avg_latency": 2133.74
+    },
+    "Telugu": {
+      "total": 25,
+      "success": 25,
+      "cache_hits": 1,
+      "success_rate": "100.0%",
+      "avg_latency": 2135.51
+    },
+    "Hindi": {
+      "total": 25,
+      "success": 25,
+      "cache_hits": 1,
+      "success_rate": "100.0%",
+      "avg_latency": 2137.09
+    }
+  },
+  "by_complexity": {
+    "Simple": {
+      "total": 29,
+      "success": 29,
+      "success_rate": "100.0%",
+      "avg_latency": 2144.53
+    },
+    "Medium": {
+      "total": 55,
+      "success": 55,
+      "success_rate": "100.0%",
+      "avg_latency": 2132.87
+    },
+    "Complex": {
+      "total": 16,
+      "success": 16,
+      "success_rate": "100.0%",
+      "avg_latency": 2125.17
+    }
+  }
+}

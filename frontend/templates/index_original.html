@@ -1,0 +1,2287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Advanced NL-to-SQL System - v2.0</title>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .workflow-container {
+            padding: 30px;
+        }
+        
+        /* Step-by-Step Workflow Styles */
+        .workflow-step {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin: 15px 0;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .workflow-step.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+        }
+        
+        .workflow-step.completed {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%);
+        }
+        
+        .workflow-step.error {
+            border-color: #f44336;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+        }
+        
+        .step-header {
+            display: flex;
+            align-items: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        
+        .step-number.completed {
+            background: #4caf50;
+        }
+        
+        .step-number.error {
+            background: #f44336;
+        }
+        
+        .step-content {
+            margin-left: 45px;
+        }
+        
+        .query-input-group {
+            margin-bottom: 20px;
+        }
+        
+        .query-input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .query-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .query-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+        
+        .model-selection {
+            display: none;
+            margin: 20px 0;
+        }
+        
+        .llm-choice-container {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .llm-choice-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .llm-choice-header h3 {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        
+        .llm-options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .llm-option {
+            border: 3px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .llm-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .llm-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+        }
+        
+        .llm-option h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .llm-option p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .llm-option .features {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .llm-option .features li {
+            color: #28a745;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+        
+        .llm-option .features li::before {
+            content: "✓ ";
+            font-weight: bold;
+        }
+        
+        .ollama-models-list {
+            display: none;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .ollama-model-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .ollama-model-item:hover {
+            background: #f0f8ff;
+        }
+        
+        .ollama-model-item.selected {
+            background: #e3f2fd;
+            border-left: 4px solid #667eea;
+        }
+        
+        .ollama-model-item strong {
+            display: block;
+            color: #333;
+        }
+        
+        .ollama-model-item small {
+            color: #666;
+        }
+        
+        .similarity-results {
+            background: #f8f9fa;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .similarity-item {
+            background: white;
+            border-radius: 5px;
+            padding: 12px;
+            margin: 8px 0;
+            border-left: 3px solid #28a745;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .similarity-item:hover {
+            background: #f0f8ff;
+            transform: translateX(5px);
+        }
+        
+        .similarity-item.selected {
+            background: #e8f5e9;
+            border-left: 5px solid #28a745;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+            font-weight: 500;
+        }
+        
+        .similarity-item.selected::before {
+            content: "✓ SELECTED: ";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .best-match-info {
+            background: #e8f5e9;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #28a745;
+            margin: 10px 0;
+        }
+        
+        .best-match-info p {
+            margin: 8px 0;
+        }
+        
+        .sql-preview {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            border: 1px solid #dee2e6;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: #2c3e50;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .similarity-score {
+            font-weight: bold;
+            color: #28a745;
+            float: right;
+        }
+        
+        .sql-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #667eea;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+        
+        .loading {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            color: #667eea;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .sample-queries {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .sample-queries h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+        
+        .sample-query {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-left: 3px solid #1976d2;
+        }
+        
+        .sample-query:hover {
+            background: #f0f8ff;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .data-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .export-buttons {
+            margin: 15px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .export-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .export-btn:hover {
+            background: #218838;
+        }
+        
+        /* Voice Input Styles */
+        .voice-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .voice-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .mic-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mic-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+        }
+        
+        .mic-button.recording {
+            background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .mic-button.processing {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 8px 24px rgba(244, 67, 54, 0.6);
+                transform: scale(1.05);
+            }
+        }
+        
+        .language-selector {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .language-selector:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .voice-status {
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .voice-status.listening {
+            background: #ffebee;
+            color: #c62828;
+            display: inline-block;
+        }
+        
+        .voice-status.processing {
+            background: #fff3e0;
+            color: #e65100;
+            display: inline-block;
+        }
+        
+        .voice-status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            display: inline-block;
+        }
+        
+        .voice-transcript {
+            background: #f0f8ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .voice-help {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 13px;
+            color: #1565c0;
+        }
+        
+        .voice-help strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .llm-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .llm-option {
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            .voice-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+        
+        /* Database Selector Styles */
+        .db-selector-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        
+        .db-current {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .db-current .db-icon {
+            font-size: 18px;
+        }
+        
+        .db-current .db-name {
+            font-weight: bold;
+        }
+        
+        .db-current .db-tables {
+            opacity: 0.8;
+            font-size: 12px;
+        }
+        
+        .db-btn {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .db-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        /* Database Modal Styles */
+        .db-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .db-modal.active {
+            display: flex;
+        }
+        
+        .db-modal-content {
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .db-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .db-modal-header h2 {
+            margin: 0;
+            font-size: 1.4em;
+        }
+        
+        .db-modal-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        
+        .db-modal-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .db-modal-body {
+            padding: 25px;
+        }
+        
+        /* Upload Zone */
+        .db-upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 25px;
+        }
+        
+        .db-upload-zone:hover,
+        .db-upload-zone.dragover {
+            background: #e3f2fd;
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+        
+        .db-upload-zone .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .db-upload-zone h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .db-upload-zone p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .db-upload-zone .file-types {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .db-upload-input {
+            display: none;
+        }
+        
+        .db-upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .db-upload-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Database List */
+        .db-list-section {
+            margin-top: 20px;
+        }
+        
+        .db-list-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .db-list {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        
+        .db-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .db-item:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .db-item.active {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+        
+        .db-item-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .db-item-icon {
+            font-size: 28px;
+        }
+        
+        .db-item-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .db-item-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .db-item-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .db-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .db-item-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .db-item-btn.use {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .db-item-btn.use:hover {
+            background: #43a047;
+        }
+        
+        .db-item-btn.delete {
+            background: #f44336;
+            color: white;
+        }
+        
+        .db-item-btn.delete:hover {
+            background: #e53935;
+        }
+        
+        .db-upload-progress {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .db-upload-progress.active {
+            display: block;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+            animation: progress-pulse 1.5s infinite;
+        }
+        
+        @keyframes progress-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Advanced NL-to-SQL System</h1>
+            <p>Intelligent query processing with similarity matching and model selection</p>
+            
+            <!-- Database Selector -->
+            <div class="db-selector-container">
+                <div class="db-current" id="dbCurrent">
+                    <span class="db-icon">🗄️</span>
+                    <span class="db-name" id="dbCurrentName">Default Database</span>
+                    <span class="db-tables" id="dbCurrentTables">(Loading...)</span>
+                </div>
+                <button class="db-btn" onclick="openDbModal()">
+                    📁 Change Database
+                </button>
+            </div>
+        </div>
+        
+        <!-- Database Modal -->
+        <div class="db-modal" id="dbModal">
+            <div class="db-modal-content">
+                <div class="db-modal-header">
+                    <h2>🗄️ Database Manager</h2>
+                    <button class="db-modal-close" onclick="closeDbModal()">&times;</button>
+                </div>
+                <div class="db-modal-body">
+                    <!-- Connect by Path (Direct - changes saved to original file) -->
+                    <div style="background: #e8f5e9; border: 2px solid #4caf50; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+                        <h3 style="color: #2e7d32; margin-bottom: 10px;">📂 Connect by File Path (Recommended)</h3>
+                        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                            Enter the full path to your .db file. Changes will be saved directly to the original file.
+                        </p>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="dbPathInput" placeholder="e.g., C:\Users\YourName\Desktop\sample.db" 
+                                   style="flex: 1; padding: 12px; border: 2px solid #4caf50; border-radius: 6px; font-size: 14px;">
+                            <button onclick="connectByPath()" class="db-upload-btn" style="background: #4caf50;">Connect</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Upload Zone (Creates a copy) -->
+                    <div class="db-upload-zone" id="dbUploadZone" onclick="document.getElementById('dbFileInput').click()">
+                        <div class="upload-icon">📤</div>
+                        <h3>Upload SQLite Database (Creates Copy)</h3>
+                        <p>Drag & drop your .db file here or click to browse</p>
+                        <p style="color: #ff9800; font-size: 12px;">⚠️ Note: This creates a copy. Use "Connect by Path" above to edit the original file.</p>
+                        <button class="db-upload-btn" type="button">Choose File</button>
+                        <p class="file-types">Supported: .db, .sqlite, .sqlite3</p>
+                        <input type="file" id="dbFileInput" class="db-upload-input" accept=".db,.sqlite,.sqlite3">
+                    </div>
+                    
+                    <!-- Upload Progress -->
+                    <div class="db-upload-progress" id="dbUploadProgress">
+                        <span id="dbUploadStatus">Uploading database...</span>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill" id="dbProgressFill"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Database List -->
+                    <div class="db-list-section">
+                        <h3>📋 Available Databases</h3>
+                        <div class="db-list" id="dbList">
+                            <!-- Databases will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="workflow-container">
+                
+                <!-- Step 1: Query Input -->
+                <div class="workflow-step active" id="step1">
+                    <div class="step-header">
+                        <div class="step-number" id="step1-number">1</div>
+                        <div>Enter Your Natural Language Query</div>
+                    </div>
+                    <div class="step-content">
+                        <!-- Voice Input Help -->
+                        <div class="voice-help">
+                            <strong>🎤 Voice Input Available!</strong>
+                            Click the microphone button and speak your query in Telugu, Hindi, or English. The system will convert your speech to text automatically.
+                        </div>
+                        
+                        <!-- Voice Controls -->
+                        <div class="voice-controls">
+                            <button id="micButton" class="mic-button" title="Click to start voice input">
+                                🎤
+                            </button>
+                            <select id="languageSelector" class="language-selector">
+                                <option value="te-IN">తెలుగు (Telugu)</option>
+                                <option value="hi-IN">हिन्दी (Hindi)</option>
+                                <option value="en-US" selected>English</option>
+                            </select>
+                            <div id="voiceStatus" class="voice-status"></div>
+                        </div>
+                        
+                        <!-- Voice Transcript Display -->
+                        <div id="voiceTranscript" class="voice-transcript"></div>
+                        
+                        <div class="query-input-group">
+                            <label for="naturalQuery">What would you like to know about your data?</label>
+                            <textarea 
+                                id="naturalQuery" 
+                                class="query-input" 
+                                placeholder="e.g., 'Create a table with name students and add 10 students roll number 1 to 10 and add some random marks to that students' OR Click 🎤 to speak"
+                            ></textarea>
+                        </div>
+                        <button id="checkSimilarityBtn" class="btn">🔍 Check Similarity & Process</button>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Similarity Check Results -->
+                <div class="workflow-step" id="step2">
+                    <div class="step-header">
+                        <div class="step-number" id="step2-number">2</div>
+                        <div>Similarity Check Results</div>
+                    </div>
+                    <div class="step-content">
+                        <div id="similarityResults"></div>
+                        <div id="similarityActions" style="display: none;">
+                            <button id="useSimilarBtn" class="btn btn-success">⚡ Use Cached Query (Instant)</button>
+                            <button id="proceedToModelBtn" class="btn btn-warning">🤖 Generate New SQL</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 3: LLM Model Selection -->
+                <div class="workflow-step" id="step3">
+                    <div class="step-header">
+                        <div class="step-number" id="step3-number">3</div>
+                        <div>Select AI Model for SQL Generation</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="llm-choice-container" id="llmChoiceContainer">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+                                
+                                <!-- Gemini Section (Left) -->
+                                <div style="border: 2px solid #667eea; border-radius: 10px; padding: 20px; background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);">
+                                    <h3 style="color: #667eea; margin-bottom: 15px;">🤖 Gemini</h3>
+                                    <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Google's Gemini 2.0 Flash Model</p>
+                                    <button id="generateSqlBtnGemini" class="btn btn-success" style="width: 100%;">Generate SQL with Gemini</button>
+                                </div>
+                                
+                                <!-- Ollama Section (Right) -->
+                                <div style="border: 2px solid #764ba2; border-radius: 10px; padding: 20px; background: linear-gradient(135deg, #fef5ff 0%, #f3e5f5 100%);">
+                                    <h3 style="color: #764ba2; margin-bottom: 15px;">🤖 Ollama Model</h3>
+                                    <select id="ollamaModelSelect" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid #764ba2; border-radius: 5px; font-size: 1em;">
+                                        <option value="">Select Ollama Model</option>
+                                        <option value="gpt-oss:20b">gpt-oss:20b (13 GB)</option>
+                                        <option value="gemma:2b">gemma:2b (1.7 GB)</option>
+                                        <option value="phi3:mini">phi3:mini (2.2 GB)</option>
+                                        <option value="tinyllama:1.1b">tinyllama:1.1b (637 MB)</option>
+                                        <option value="llama3.2:1b">llama3.2:1b (1.3 GB)</option>
+                                        <option value="phi4-mini:latest">phi4-mini:latest (2.5 GB)</option>
+                                        <option value="mistral:latest">mistral:latest (4.1 GB)</option>
+                                        <option value="llama2:latest">llama2:latest (3.8 GB)</option>
+                                    </select>
+                                    <button id="generateSqlBtnOllama" class="btn btn-success" style="width: 100%;" disabled>Generate SQL with Ollama</button>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 4: SQL Generation & Review -->
+                <div class="workflow-step" id="step4">
+                    <div class="step-header">
+                        <div class="step-number" id="step4-number">4</div>
+                        <div>Generated SQL Query</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="loading" id="loadingSQL">Generating SQL query...</div>
+                        <div id="sqlResults">
+                            <div id="generatedSQL" class="sql-display"></div>
+                            <div id="sqlActions" style="display: none;">
+                                <button id="executeSqlBtn" class="btn btn-success">▶️ Execute Query</button>
+                                <button id="editSqlBtn" class="btn btn-warning">✏️ Edit SQL</button>
+                                <button id="startOverBtn" class="btn btn-danger">🔄 Start Over</button>
+                                
+                                <div style="margin-top: 15px;">
+                                    <label>
+                                        <input type="checkbox" id="visualizeCheck"> 📊 Create Visualization
+                                    </label>
+                                    <select id="chartType" style="margin-left: 10px; padding: 5px;">
+                                        <option value="">Auto-detect</option>
+                                        <option value="bar">Bar Chart</option>
+                                        <option value="line">Line Chart</option>
+                                        <option value="pie">Pie Chart</option>
+                                        <option value="histogram">Histogram</option>
+                                        <option value="scatter">Scatter Plot</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 5: Execution Results -->
+                <div class="workflow-step" id="step5">
+                    <div class="step-header">
+                        <div class="step-number" id="step5-number">5</div>
+                        <div>Query Results</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="loading" id="loadingExecution">Executing query...</div>
+                        <div id="executionResults"></div>
+                    </div>
+                </div>
+                
+                <!-- Sample Queries -->
+                <div class="sample-queries">
+                    <h3>💡 Sample Queries - Click to try:</h3>
+                    <div class="sample-query" onclick="setQuery('Create a table with name students and add 10 students roll number 1 to 10 and add some random marks to that students')">
+                        Create a table with name students and add 10 students roll number 1 to 10 and add some random marks
+                    </div>
+                    <div class="sample-query" onclick="setQuery('Show all employees with salary greater than 70000')">
+                        Show all employees with salary greater than 70000
+                    </div>
+                    <div class="sample-query" onclick="setQuery('Find average salary by department')">
+                        Find average salary by department
+                    </div>
+                    <div class="sample-query" onclick="setQuery('List all projects with status In Progress')">
+                        List all projects with status 'In Progress'
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentStep = 1;
+    let selectedLLMType = 'gemini';
+    let selectedModel = 'models/gemini-2.0-flash';
+        let currentQuery = '';
+        let similarQueries = [];
+        let generatedSQL = '';
+        let selectedSimilarIndex = null;
+        
+        // Voice recognition variables
+        let recognition = null;
+        let isRecording = false;
+        let voiceTranscript = '';
+        
+        // Database variables
+        let currentDatabase = null;
+        let uploadedDatabases = [];
+
+        // API base: Always use Flask server on port 5000 for API calls
+        // Check if we're on the correct port (5000), otherwise force it
+        const API_BASE = (window.location.port === '5000') ? window.location.origin : 'http://localhost:5000';
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            initializeVoiceRecognition();
+            initializeDatabaseFeature();
+            // Auto-select Gemini 2.0 Flash (internal selection only)
+            selectedLLMType = 'gemini';
+            selectedModel = 'models/gemini-2.0-flash';
+            updateGenerateButton();
+        });
+        
+        function setupEventListeners() {
+            document.getElementById('checkSimilarityBtn').addEventListener('click', checkSimilarity);
+            document.getElementById('useSimilarBtn').addEventListener('click', useSimilarQuery);
+            document.getElementById('proceedToModelBtn').addEventListener('click', proceedToModelSelection);
+            document.getElementById('generateSqlBtnGemini').addEventListener('click', () => generateSQL('gemini'));
+            document.getElementById('generateSqlBtnOllama').addEventListener('click', () => generateSQL('ollama'));
+            document.getElementById('ollamaModelSelect').addEventListener('change', updateOllamaButton);
+            document.getElementById('executeSqlBtn').addEventListener('click', executeSQL);
+            document.getElementById('editSqlBtn').addEventListener('click', editSQL);
+            document.getElementById('startOverBtn').addEventListener('click', startOver);
+            
+            // Voice input event listeners
+            document.getElementById('micButton').addEventListener('click', toggleVoiceRecognition);
+            document.getElementById('languageSelector').addEventListener('change', onLanguageChange);
+        }
+        
+        // ============= VOICE RECOGNITION FUNCTIONS =============
+        
+        function initializeVoiceRecognition() {
+            // Check if browser supports Web Speech API
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                console.error('Web Speech API not supported in this browser');
+                document.getElementById('micButton').disabled = true;
+                document.getElementById('micButton').title = 'Voice input not supported in this browser. Please use Chrome or Edge.';
+                document.querySelector('.voice-help').innerHTML = '<strong>⚠️ Voice Input Not Available</strong>Your browser doesn\'t support voice input. Please use Google Chrome or Microsoft Edge for voice features.';
+                return;
+            }
+            
+            // Initialize speech recognition
+            recognition = new SpeechRecognition();
+            
+            // Configure recognition
+            recognition.continuous = true;  // Keep listening until stopped
+            recognition.interimResults = true;  // Show results as user speaks
+            recognition.maxAlternatives = 1;
+            
+            // Set initial language
+            recognition.lang = document.getElementById('languageSelector').value;
+            
+            // Event handlers
+            recognition.onstart = function() {
+                console.log('Voice recognition started');
+                isRecording = true;
+                updateVoiceUI('listening');
+            };
+            
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                
+                // Update transcript display
+                if (interimTranscript) {
+                    document.getElementById('voiceTranscript').textContent = '🎙️ Listening: ' + interimTranscript;
+                    document.getElementById('voiceTranscript').style.display = 'block';
+                }
+                
+                // Update query textarea with final transcript
+                if (finalTranscript) {
+                    voiceTranscript += finalTranscript;
+                    const queryBox = document.getElementById('naturalQuery');
+                    queryBox.value = voiceTranscript.trim();
+                    
+                    // Show in transcript with success styling
+                    document.getElementById('voiceTranscript').textContent = '✅ Recognized: ' + voiceTranscript.trim();
+                }
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                isRecording = false;
+                
+                let errorMessage = 'Voice recognition error';
+                
+                switch(event.error) {
+                    case 'no-speech':
+                        errorMessage = 'No speech detected. Please try again.';
+                        break;
+                    case 'audio-capture':
+                        errorMessage = 'Microphone not found. Please check your microphone.';
+                        break;
+                    case 'not-allowed':
+                        errorMessage = 'Microphone permission denied. Please allow microphone access.';
+                        break;
+                    case 'network':
+                        errorMessage = 'Network error. Please check your internet connection.';
+                        break;
+                    default:
+                        errorMessage = `Error: ${event.error}`;
+                }
+                
+                updateVoiceUI('error', errorMessage);
+                
+                // Reset button
+                setTimeout(() => {
+                    updateVoiceUI('idle');
+                }, 3000);
+            };
+            
+            recognition.onend = function() {
+                console.log('Voice recognition ended');
+                isRecording = false;
+                
+                if (voiceTranscript.trim()) {
+                    updateVoiceUI('success', '✅ Voice input complete! You can now click "Check Similarity & Process"');
+                } else {
+                    updateVoiceUI('idle');
+                }
+                
+                // Auto-hide status after 3 seconds
+                setTimeout(() => {
+                    if (!isRecording) {
+                        document.getElementById('voiceStatus').style.display = 'none';
+                    }
+                }, 3000);
+            };
+        }
+        
+        function toggleVoiceRecognition() {
+            if (!recognition) {
+                alert('Voice recognition is not available in this browser. Please use Chrome or Edge.');
+                return;
+            }
+            
+            if (isRecording) {
+                // Stop recording
+                recognition.stop();
+                isRecording = false;
+                updateVoiceUI('processing', 'Processing your speech...');
+            } else {
+                // Start recording
+                voiceTranscript = ''; // Reset transcript
+                document.getElementById('naturalQuery').value = ''; // Clear query box
+                document.getElementById('voiceTranscript').style.display = 'none';
+                
+                try {
+                    recognition.start();
+                } catch (error) {
+                    console.error('Error starting recognition:', error);
+                    alert('Could not start voice recognition. Please try again.');
+                }
+            }
+        }
+        
+        function onLanguageChange() {
+            const selectedLang = document.getElementById('languageSelector').value;
+            
+            if (recognition) {
+                recognition.lang = selectedLang;
+            }
+            
+            // If currently recording, restart with new language
+            if (isRecording) {
+                recognition.stop();
+                setTimeout(() => {
+                    voiceTranscript = '';
+                    document.getElementById('naturalQuery').value = '';
+                    recognition.start();
+                }, 100);
+            }
+            
+            // Show language-specific example
+            const examples = {
+                'te-IN': 'ఉదా: "నాకు డిపార్ట్‌మెంట్ వారీగా సగటు జీతం చూపించు"',
+                'hi-IN': 'उदाहरण: "मुझे विभाग के अनुसार औसत वेतन दिखाएं"',
+                'en-US': 'Example: "Show me average salary by department"'
+            };
+            
+            showMessage(`Language changed to ${selectedLang}. ${examples[selectedLang]}`, 'info');
+        }
+        
+        function updateVoiceUI(state, message = '') {
+            const micButton = document.getElementById('micButton');
+            const voiceStatus = document.getElementById('voiceStatus');
+            
+            // Remove all state classes
+            micButton.classList.remove('recording', 'processing');
+            voiceStatus.classList.remove('listening', 'processing', 'success');
+            
+            switch(state) {
+                case 'listening':
+                    micButton.classList.add('recording');
+                    micButton.textContent = '🔴';
+                    micButton.title = 'Click to stop recording';
+                    voiceStatus.textContent = '🎙️ Listening... Speak now!';
+                    voiceStatus.classList.add('listening');
+                    voiceStatus.style.display = 'inline-block';
+                    break;
+                    
+                case 'processing':
+                    micButton.classList.add('processing');
+                    micButton.textContent = '⏸️';
+                    voiceStatus.textContent = message || '⏳ Processing...';
+                    voiceStatus.classList.add('processing');
+                    voiceStatus.style.display = 'inline-block';
+                    break;
+                    
+                case 'success':
+                    micButton.textContent = '🎤';
+                    micButton.title = 'Click to start voice input';
+                    voiceStatus.textContent = message || '✅ Done!';
+                    voiceStatus.classList.add('success');
+                    voiceStatus.style.display = 'inline-block';
+                    break;
+                    
+                case 'error':
+                    micButton.textContent = '🎤';
+                    micButton.title = 'Click to start voice input';
+                    voiceStatus.textContent = message || '❌ Error';
+                    voiceStatus.style.display = 'inline-block';
+                    break;
+                    
+                case 'idle':
+                default:
+                    micButton.textContent = '🎤';
+                    micButton.title = 'Click to start voice input';
+                    voiceStatus.style.display = 'none';
+                    break;
+            }
+        }
+        
+        // ============= END VOICE RECOGNITION FUNCTIONS =============
+
+
+        
+        async function checkSimilarity() {
+            const query = document.getElementById('naturalQuery').value.trim();
+            if (!query) {
+                showMessage('Please enter a query', 'error');
+                return;
+            }
+            
+            currentQuery = query;
+            updateStepStatus(1, 'completed');
+            updateStepStatus(2, 'active');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/similarity-check`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+                let result;
+
+                if (contentType.includes('application/json')) {
+                    result = await response.json();
+                } else {
+                    // Non-JSON response (likely an HTML error page). Surface a short snippet for debugging.
+                    const text = await response.text();
+                    const snippet = text.slice(0, 1000).replace(/\s+/g, ' ');
+                    throw new Error('Server returned non-JSON response: ' + snippet);
+                }
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || 'Failed to check similarity');
+                }
+
+                similarQueries = result.similar_queries || [];
+                displaySimilarityResults(similarQueries);
+                
+            } catch (error) {
+                updateStepStatus(2, 'error');
+                showMessage('Failed to check similarity: ' + error.message, 'error');
+            }
+        }
+        
+        function displaySimilarityResults(similar) {
+            const resultsDiv = document.getElementById('similarityResults');
+            const actionsDiv = document.getElementById('similarityActions');
+            
+            if (similar.length > 0) {
+                // Auto-select the first (best) match
+                selectedSimilarIndex = 0;
+                
+                const bestMatch = similar[0];
+                const score = (bestMatch.similarity * 100).toFixed(1);
+                
+                // Get current query with safety check
+                const queryInput = document.getElementById('naturalQuery');
+                if (!queryInput) {
+                    console.error('naturalQuery input not found!');
+                    return;
+                }
+                const currentQuery = queryInput.value.trim();
+                
+                // Immediately call entity swapping to get the adapted SQL
+                showMessage('🔄 Found similar query, adapting for your request...', 'info');
+                
+                fetch(`${API_BASE}/api/swap-entities`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        original_query: bestMatch.query.natural_query,
+                        new_query: currentQuery,
+                        original_sql: bestMatch.query.sql_query
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const adaptedSQL = result.adapted_sql;
+                        const hasStructuralChange = result.structural_change || false;
+                        
+                        let html = '<div class="similarity-results">';
+                        html += '<h4>⚡ Smart Cache Hit!</h4>';
+                        html += `<div class="best-match-info">`;
+                        html += `<p><strong>Match Score:</strong> ${score}%</p>`;
+                        
+                        // Warning for structural changes (aggregations only - columns are now handled)
+                        if (hasStructuralChange) {
+                            html += `<div style="background: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 4px; margin: 10px 0;">`;
+                            html += `<p style="color: #856404; margin: 0; font-weight: bold;">⚠️ Aggregation Change Detected</p>`;
+                            html += `<p style="color: #856404; margin: 5px 0 0 0; font-size: 0.9em;">Your query appears to use different aggregations (COUNT, SUM, etc.) than the cached query. Consider clicking "Generate New SQL" for more accurate results.</p>`;
+                            html += `</div>`;
+                        } else if (result.swapped) {
+                            html += `<p style="color: #28a745;"><strong>✓ Smart Adaptation:</strong> ${result.message}</p>`;
+                        }
+                        
+                        html += `<p><strong>Adapted SQL:</strong></p>`;
+                        html += `<div class="sql-preview">${adaptedSQL}</div>`;
+                        
+                        if (!hasStructuralChange) {
+                            html += `<p style="color: #666; font-size: 0.9em; margin-top: 10px;">💡 This SQL was intelligently adapted from cache instantly! Click "Use Cached Query" to execute it.</p>`;
+                        } else {
+                            html += `<p style="color: #666; font-size: 0.9em; margin-top: 10px;">💡 You can still use the cached query, but generating new SQL is recommended for aggregation changes.</p>`;
+                        }
+                        
+                        html += `</div>`;
+                        html += '</div>';
+                        
+                        resultsDiv.innerHTML = html;
+                        actionsDiv.style.display = 'block';
+                        
+                        updateStepStatus(2, 'completed');
+                    } else {
+                        throw new Error(result.error || 'Entity swapping failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Entity swapping error:', error);
+                    // Fallback: show basic match info
+                    let html = '<div class="similarity-results">';
+                    html += '<h4>✅ Similar Query Found!</h4>';
+                    html += `<div class="best-match-info">`;
+                    html += `<p><strong>Match Score:</strong> ${score}%</p>`;
+                    html += `<p style="color: #666; font-size: 0.9em;">💡 Click "Use Cached Query" to get instant results</p>`;
+                    html += `</div>`;
+                    html += '</div>';
+                    
+                    resultsDiv.innerHTML = html;
+                    actionsDiv.style.display = 'block';
+                    updateStepStatus(2, 'completed');
+                });
+                
+            } else {
+                resultsDiv.innerHTML = '<div class="message info">🔍 No similar queries found. Proceeding to model selection...</div>';
+                actionsDiv.style.display = 'none';
+                
+                setTimeout(() => {
+                    updateStepStatus(2, 'completed');
+                    proceedToModelSelection();
+                }, 1500);
+            }
+        }
+        
+        function selectSimilarQuery(index) {
+            // Remove previous selections
+            document.querySelectorAll('.similarity-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Highlight selected
+            document.querySelectorAll('.similarity-item')[index].classList.add('selected');
+            
+            // Store selected query
+            selectedSimilarIndex = index;
+        }
+        
+        function useSimilarQuery() {
+            if (selectedSimilarIndex !== null) {
+                const selectedQuery = similarQueries[selectedSimilarIndex];
+                
+                // Get current query with safety check
+                const queryInput = document.getElementById('naturalQuery');
+                if (!queryInput) {
+                    console.error('naturalQuery input not found!');
+                    showMessage('Error: Query input not found', 'error');
+                    return;
+                }
+                const currentQuery = queryInput.value.trim();
+                
+                showMessage('⚡ Using cached query with smart entity swapping...', 'info');
+                
+                // Call entity swapping API
+                fetch(`${API_BASE}/api/swap-entities`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        original_query: selectedQuery.query.natural_query,
+                        new_query: currentQuery,
+                        original_sql: selectedQuery.query.sql_query
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        generatedSQL = result.adapted_sql;
+                        const hasStructuralChange = result.structural_change || false;
+                        
+                        // Skip directly to Step 4 (Generated SQL)
+                        updateStepStatus(2, 'completed');
+                        updateStepStatus(3, 'completed');
+                        updateStepStatus(4, 'active');
+                        
+                        // Display the adapted SQL
+                        document.getElementById('generatedSQL').textContent = generatedSQL;
+                        document.getElementById('sqlActions').style.display = 'block';
+                        
+                        updateStepStatus(4, 'completed');
+                        
+                        // Show success message with warning if structural change
+                        if (hasStructuralChange) {
+                            showMessage('⚠️ Cached query used, but aggregation changes detected. Consider regenerating SQL for best results.', 'warning');
+                        } else if (result.swapped) {
+                            showMessage('✅ ' + result.message + ' ⚡ (Instant result)', 'success');
+                        } else {
+                            showMessage('✅ Using exact cached query! ⚡ (Instant result)', 'success');
+                        }
+                    } else {
+                        throw new Error(result.error || 'Entity swapping failed');
+                    }
+                })
+                .catch(error => {
+                    showMessage('Failed to adapt query: ' + error.message, 'error');
+                    // Fallback: use original SQL without swapping
+                    generatedSQL = selectedQuery.query.sql_query;
+                    document.getElementById('generatedSQL').textContent = generatedSQL;
+                    updateStepStatus(2, 'completed');
+                    updateStepStatus(3, 'completed');
+                    updateStepStatus(4, 'completed');
+                });
+                
+            } else {
+                showMessage('Please check similarity first', 'error');
+            }
+        }
+        
+        function proceedToModelSelection() {
+            updateStepStatus(3, 'active');
+            document.getElementById('llmChoiceContainer').style.display = 'block';
+        }
+        
+
+
+        
+        function updateGenerateButton() {
+            // This function is no longer needed but kept for compatibility
+        }
+        
+        function updateOllamaButton() {
+            const ollamaSelect = document.getElementById('ollamaModelSelect');
+            const ollamaBtn = document.getElementById('generateSqlBtnOllama');
+            
+            if (ollamaSelect.value) {
+                ollamaBtn.disabled = false;
+            } else {
+                ollamaBtn.disabled = true;
+            }
+        }
+        
+        async function generateSQL(modelType) {
+            updateStepStatus(3, 'completed');
+            updateStepStatus(4, 'active');
+            
+            document.getElementById('loadingSQL').style.display = 'flex';
+            
+            try {
+                let requestBody;
+                
+                if (modelType === 'gemini') {
+                    requestBody = {
+                        query: currentQuery,
+                        model: 'models/gemini-2.0-flash',
+                        use_ollama: false
+                    };
+                } else if (modelType === 'ollama') {
+                    const ollamaModel = document.getElementById('ollamaModelSelect').value;
+                    if (!ollamaModel) {
+                        showMessage('Please select an Ollama model', 'error');
+                        document.getElementById('loadingSQL').style.display = 'none';
+                        updateStepStatus(4, 'error');
+                        return;
+                    }
+                    requestBody = {
+                        query: currentQuery,
+                        model: ollamaModel,
+                        use_ollama: true
+                    };
+                }
+                
+                const response = await fetch(`${API_BASE}/api/generate-sql`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                const result = await response.json();
+                
+                document.getElementById('loadingSQL').style.display = 'none';
+                
+                if (result.success) {
+                    generatedSQL = result.sql_query;
+                    document.getElementById('generatedSQL').textContent = generatedSQL;
+                    document.getElementById('sqlActions').style.display = 'block';
+                    
+                    updateStepStatus(4, 'completed');
+                    const modelName = modelType === 'gemini' ? 'Gemini 2.0 Flash' : requestBody.model;
+                    showMessage(`SQL generated successfully with ${modelName}!`, 'success');
+                } else {
+                    updateStepStatus(4, 'error');
+                    showMessage('Failed to generate SQL: ' + result.error, 'error');
+                }
+                
+            } catch (error) {
+                document.getElementById('loadingSQL').style.display = 'none';
+                updateStepStatus(4, 'error');
+                showMessage('Error generating SQL: ' + error.message, 'error');
+            }
+        }
+        
+        async function executeSQL() {
+            updateStepStatus(5, 'active');
+            document.getElementById('loadingExecution').style.display = 'flex';
+            
+            const visualize = document.getElementById('visualizeCheck').checked;
+            const chartType = document.getElementById('chartType').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/execute-sql`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sql_query: generatedSQL,
+                        natural_query: currentQuery,
+                        visualize: visualize,
+                        chart_type: chartType
+                    })
+                });
+                
+                const result = await response.json();
+                
+                document.getElementById('loadingExecution').style.display = 'none';
+                
+                if (result.success) {
+                    displayExecutionResults(result);
+                    updateStepStatus(5, 'completed');
+                } else {
+                    updateStepStatus(5, 'error');
+                    showMessage('Execution failed: ' + result.error, 'error');
+                }
+                
+            } catch (error) {
+                document.getElementById('loadingExecution').style.display = 'none';
+                updateStepStatus(5, 'error');
+                showMessage('Execution error: ' + error.message, 'error');
+            }
+        }
+        
+        function displayExecutionResults(result) {
+            const resultsDiv = document.getElementById('executionResults');
+            let html = '';
+            
+            // Show which database was used
+            if (result.database_used) {
+                const dbName = result.database_used.split('/').pop().split('\\').pop();
+                html += `<div class="message info" style="margin-bottom: 10px;">🗄️ Database: <strong>${dbName}</strong></div>`;
+            }
+            
+            html += `<div class="message success">✅ Query executed successfully in ${result.execution_time}s</div>`;
+            
+            if (result.data && result.data.length > 0) {
+                html += createDataTable(result.data);
+                html += createExportButtons();
+            } else {
+                html += '<div class="message info">📋 Query executed successfully but returned no data.</div>';
+            }
+            
+            if (result.visualization_data) {
+                html += '<div id="plotlyDiv" style="width: 100%; height: 500px; margin-top: 20px;"></div>';
+                setTimeout(() => {
+                    Plotly.newPlot('plotlyDiv', result.visualization_data.data, result.visualization_data.layout);
+                }, 100);
+            }
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function createDataTable(data) {
+            if (!data || data.length === 0) return '';
+            
+            const columns = Object.keys(data[0]);
+            let html = '<table class="data-table">';
+            
+            // Header
+            html += '<thead><tr>';
+            columns.forEach(col => {
+                html += `<th>${col}</th>`;
+            });
+            html += '</tr></thead>';
+            
+            // Body
+            html += '<tbody>';
+            data.slice(0, 100).forEach(row => {
+                html += '<tr>';
+                columns.forEach(col => {
+                    html += `<td>${row[col] !== null ? row[col] : ''}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            
+            if (data.length > 100) {
+                html += `<div class="message info">Showing first 100 rows of ${data.length} total rows.</div>`;
+            }
+            
+            return html;
+        }
+        
+        function createExportButtons() {
+            return `
+                <div class="export-buttons">
+                    <button class="export-btn" onclick="exportData('csv')">📄 Export CSV</button>
+                    <button class="export-btn" onclick="exportData('excel')">📊 Export Excel</button>
+                    <button class="export-btn" onclick="exportData('json')">📋 Export JSON</button>
+                </div>
+            `;
+        }
+        
+        function editSQL() {
+            const newSQL = prompt('Edit SQL Query:', generatedSQL);
+            if (newSQL && newSQL.trim()) {
+                generatedSQL = newSQL.trim();
+                document.getElementById('generatedSQL').textContent = generatedSQL;
+                showMessage('SQL updated successfully!', 'success');
+            }
+        }
+        
+        function startOver() {
+            // Stop voice recording if active
+            if (isRecording && recognition) {
+                recognition.stop();
+            }
+            
+            // Reset all steps
+            for (let i = 1; i <= 5; i++) {
+                updateStepStatus(i, i === 1 ? 'active' : 'inactive');
+            }
+            
+            // Clear form data
+            document.getElementById('naturalQuery').value = '';
+            document.getElementById('similarityResults').innerHTML = '';
+            document.getElementById('similarityActions').style.display = 'none';
+            document.getElementById('llmChoiceContainer').style.display = 'none';
+            document.getElementById('generatedSQL').textContent = '';
+            document.getElementById('sqlActions').style.display = 'none';
+            document.getElementById('executionResults').innerHTML = '';
+            
+            // Reset voice UI
+            document.getElementById('voiceTranscript').style.display = 'none';
+            updateVoiceUI('idle');
+            voiceTranscript = '';
+            
+            // Reset variables (keep Gemini selected)
+            currentStep = 1;
+            selectedLLMType = 'gemini';
+            selectedModel = 'models/gemini-2.0-flash';
+            currentQuery = '';
+            similarQueries = [];
+            generatedSQL = '';
+            selectedSimilarIndex = null;
+            
+            updateGenerateButton();
+            showMessage('Ready for a new query!', 'info');
+        }
+        
+        function updateStepStatus(stepNum, status) {
+            const stepElement = document.getElementById(`step${stepNum}`);
+            const numberElement = document.getElementById(`step${stepNum}-number`);
+            
+            // Remove all status classes
+            stepElement.classList.remove('active', 'completed', 'error');
+            numberElement.classList.remove('completed', 'error');
+            
+            // Add new status
+            if (status === 'active') {
+                stepElement.classList.add('active');
+            } else if (status === 'completed') {
+                stepElement.classList.add('completed');
+                numberElement.classList.add('completed');
+                numberElement.textContent = '✓';
+            } else if (status === 'error') {
+                stepElement.classList.add('error');
+                numberElement.classList.add('error');
+                numberElement.textContent = '✗';
+            } else {
+                numberElement.textContent = stepNum;
+            }
+        }
+        
+        function showMessage(message, type) {
+            // Create or update message element
+            let messageEl = document.getElementById('globalMessage');
+            if (!messageEl) {
+                messageEl = document.createElement('div');
+                messageEl.id = 'globalMessage';
+                document.querySelector('.workflow-container').prepend(messageEl);
+            }
+            
+            messageEl.className = `message ${type}`;
+            messageEl.textContent = message;
+            
+            // Auto-hide after 5 seconds for success/info messages
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    if (messageEl) {
+                        messageEl.remove();
+                    }
+                }, 5000);
+            }
+        }
+        
+        function setQuery(query) {
+            document.getElementById('naturalQuery').value = query;
+        }
+        
+        // Export functionality placeholder
+        async function exportData(format) {
+            showMessage('Export functionality will be implemented', 'info');
+        }
+        
+        // ============= DATABASE MANAGEMENT FUNCTIONS =============
+        
+        function initializeDatabaseFeature() {
+            // Load current database info
+            loadCurrentDatabase();
+            
+            // Setup file input change handler
+            document.getElementById('dbFileInput').addEventListener('change', handleFileSelect);
+            
+            // Setup drag and drop
+            const uploadZone = document.getElementById('dbUploadZone');
+            
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+            
+            uploadZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+            });
+            
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileUpload(files[0]);
+                }
+            });
+            
+            // Close modal when clicking outside
+            document.getElementById('dbModal').addEventListener('click', (e) => {
+                if (e.target.id === 'dbModal') {
+                    closeDbModal();
+                }
+            });
+        }
+        
+        async function loadCurrentDatabase() {
+            try {
+                const response = await fetch(`${API_BASE}/api/db/current`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentDatabase = result.current_db;
+                    uploadedDatabases = result.uploaded_databases;
+                    
+                    // Update UI
+                    document.getElementById('dbCurrentName').textContent = currentDatabase.name;
+                    document.getElementById('dbCurrentTables').textContent = `(${currentDatabase.table_count} tables)`;
+                    
+                    // Update database list in modal
+                    renderDatabaseList();
+                }
+            } catch (error) {
+                console.error('Error loading database info:', error);
+                document.getElementById('dbCurrentTables').textContent = '(Error loading)';
+            }
+        }
+        
+        function openDbModal() {
+            document.getElementById('dbModal').classList.add('active');
+            loadCurrentDatabase();
+        }
+        
+        function closeDbModal() {
+            document.getElementById('dbModal').classList.remove('active');
+        }
+        
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFileUpload(file);
+            }
+        }
+        
+        async function handleFileUpload(file) {
+            // Validate file extension
+            const validExtensions = ['.db', '.sqlite', '.sqlite3'];
+            const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            
+            if (!validExtensions.includes(fileExt)) {
+                showMessage(`Invalid file type. Please upload a SQLite database file (${validExtensions.join(', ')})`, 'error');
+                return;
+            }
+            
+            // Show progress
+            const progressDiv = document.getElementById('dbUploadProgress');
+            const progressFill = document.getElementById('dbProgressFill');
+            const statusText = document.getElementById('dbUploadStatus');
+            
+            progressDiv.classList.add('active');
+            statusText.textContent = `Uploading ${file.name}...`;
+            progressFill.style.width = '30%';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                progressFill.style.width = '60%';
+                
+                const response = await fetch(`${API_BASE}/api/db/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                progressFill.style.width = '90%';
+                
+                const result = await response.json();
+                
+                progressFill.style.width = '100%';
+                
+                if (result.success) {
+                    statusText.textContent = 'Database uploaded successfully!';
+                    
+                    // Update current database
+                    currentDatabase = result.database;
+                    document.getElementById('dbCurrentName').textContent = currentDatabase.name;
+                    document.getElementById('dbCurrentTables').textContent = `(${currentDatabase.table_count} tables)`;
+                    
+                    // Reload database list
+                    await loadCurrentDatabase();
+                    
+                    // Show success message
+                    showMessage(`Database "${result.database.name}" uploaded and activated! Tables: ${result.database.tables.join(', ')}`, 'success');
+                    
+                    // Close modal after delay
+                    setTimeout(() => {
+                        closeDbModal();
+                        // Reset progress
+                        progressDiv.classList.remove('active');
+                        progressFill.style.width = '0%';
+                    }, 1500);
+                } else {
+                    throw new Error(result.error || 'Upload failed');
+                }
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                statusText.textContent = `Upload failed: ${error.message}`;
+                progressFill.style.width = '0%';
+                showMessage(`Upload failed: ${error.message}`, 'error');
+                
+                setTimeout(() => {
+                    progressDiv.classList.remove('active');
+                }, 3000);
+            }
+            
+            // Reset file input
+            document.getElementById('dbFileInput').value = '';
+        }
+        
+        function renderDatabaseList() {
+            const listDiv = document.getElementById('dbList');
+            let html = '';
+            
+            // Default database
+            const isDefaultActive = currentDatabase && currentDatabase.name === 'Default Database';
+            html += `
+                <div class="db-item ${isDefaultActive ? 'active' : ''}">
+                    <div class="db-item-info">
+                        <span class="db-item-icon">🏠</span>
+                        <div class="db-item-details">
+                            <span class="db-item-name">Default Database</span>
+                            <span class="db-item-meta">Built-in sample database</span>
+                        </div>
+                    </div>
+                    <div class="db-item-actions">
+                        ${!isDefaultActive ? `<button class="db-item-btn use" onclick="switchDatabase('default')">Use</button>` : '<span style="color: #4caf50; font-weight: bold;">✓ Active</span>'}
+                    </div>
+                </div>
+            `;
+            
+            // Uploaded databases
+            uploadedDatabases.forEach(db => {
+                const isActive = currentDatabase && currentDatabase.path === db.path;
+                const sizeKB = (db.size / 1024).toFixed(1);
+                
+                html += `
+                    <div class="db-item ${isActive ? 'active' : ''}">
+                        <div class="db-item-info">
+                            <span class="db-item-icon">📁</span>
+                            <div class="db-item-details">
+                                <span class="db-item-name">${db.name}</span>
+                                <span class="db-item-meta">${sizeKB} KB</span>
+                            </div>
+                        </div>
+                        <div class="db-item-actions">
+                            ${!isActive ? `<button class="db-item-btn use" onclick="switchDatabase('${db.path}')">Use</button>` : '<span style="color: #4caf50; font-weight: bold;">✓ Active</span>'}
+                            <button class="db-item-btn delete" onclick="deleteDatabase('${db.path}', '${db.name}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if (uploadedDatabases.length === 0) {
+                html += `
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        <p>No uploaded databases yet.</p>
+                        <p style="font-size: 12px;">Upload a .db file to get started!</p>
+                    </div>
+                `;
+            }
+            
+            listDiv.innerHTML = html;
+        }
+        
+        async function switchDatabase(path) {
+            try {
+                const response = await fetch(`${API_BASE}/api/db/switch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: path })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentDatabase = result.database;
+                    document.getElementById('dbCurrentName').textContent = currentDatabase.name;
+                    document.getElementById('dbCurrentTables').textContent = `(${currentDatabase.table_count} tables)`;
+                    
+                    // Reload list
+                    await loadCurrentDatabase();
+                    
+                    showMessage(`Switched to "${result.database.name}". Tables: ${result.database.tables.join(', ')}`, 'success');
+                    
+                    // Reset workflow if in progress
+                    startOver();
+                    
+                    closeDbModal();
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Switch database error:', error);
+                showMessage(`Failed to switch database: ${error.message}`, 'error');
+            }
+        }
+        
+        async function deleteDatabase(path, name) {
+            if (!confirm(`Are you sure you want to delete "${name}"? This cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/db/delete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: path })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(`Database "${name}" deleted`, 'info');
+                    await loadCurrentDatabase();
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Delete database error:', error);
+                showMessage(`Failed to delete database: ${error.message}`, 'error');
+            }
+        }
+        
+        async function connectByPath() {
+            const pathInput = document.getElementById('dbPathInput');
+            const dbPath = pathInput.value.trim();
+            
+            if (!dbPath) {
+                showMessage('Please enter a file path', 'error');
+                return;
+            }
+            
+            try {
+                showMessage('Connecting to database...', 'info');
+                
+                const response = await fetch(`${API_BASE}/api/db/connect-path`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: dbPath })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentDatabase = result.database;
+                    document.getElementById('dbCurrentName').textContent = currentDatabase.name;
+                    document.getElementById('dbCurrentTables').textContent = `(${currentDatabase.table_count} tables)`;
+                    
+                    showMessage(`✅ Connected to "${result.database.name}"! Tables: ${result.database.tables.join(', ')}. Changes will be saved to the original file.`, 'success');
+                    
+                    // Clear input
+                    pathInput.value = '';
+                    
+                    // Reset workflow
+                    startOver();
+                    
+                    // Close modal
+                    closeDbModal();
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Connect by path error:', error);
+                showMessage(`Failed to connect: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

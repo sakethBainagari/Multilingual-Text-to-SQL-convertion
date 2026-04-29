@@ -1,0 +1,273 @@
+{
+  "evaluation_date": "2026-01-01T13:45:42.706865",
+  "latency": {
+    "cache_hit": {
+      "mean": 84.64,
+      "std": 18.66,
+      "min": 39.3,
+      "max": 123.97,
+      "p95": 120.49
+    },
+    "cache_miss_rule": {
+      "mean": 183.88,
+      "std": 30.21,
+      "min": 117.23,
+      "max": 264.61,
+      "p95": 228.35
+    },
+    "cache_miss_llm": {
+      "mean": 658.32,
+      "std": 108.02,
+      "min": 372.96,
+      "max": 917.64,
+      "p95": 850.51
+    },
+    "entity_swap": {
+      "mean": 44.68,
+      "std": 8.71,
+      "min": 27.67,
+      "max": 64.13,
+      "p95": 59.45
+    }
+  },
+  "accuracy": {
+    "by_category": {
+      "Simple Queries": {
+        "total": 100,
+        "correct": 98,
+        "accuracy": 98.0
+      },
+      "Medium Queries": {
+        "total": 100,
+        "correct": 94,
+        "accuracy": 94.0
+      },
+      "Complex Queries": {
+        "total": 100,
+        "correct": 88,
+        "accuracy": 88.0
+      },
+      "Advanced Queries": {
+        "total": 50,
+        "correct": 42,
+        "accuracy": 84.0
+      },
+      "Multilingual (Telugu)": {
+        "total": 50,
+        "correct": 46,
+        "accuracy": 92.0
+      },
+      "Multilingual (Hindi)": {
+        "total": 50,
+        "correct": 45,
+        "accuracy": 90.0
+      },
+      "Voice Input (English)": {
+        "total": 50,
+        "correct": 47,
+        "accuracy": 94.0
+      },
+      "Voice Input (Telugu)": {
+        "total": 30,
+        "correct": 27,
+        "accuracy": 90.0
+      },
+      "Voice Input (Hindi)": {
+        "total": 30,
+        "correct": 26,
+        "accuracy": 86.7
+      }
+    },
+    "overall": {
+      "total_queries": 560,
+      "correct_queries": 513,
+      "accuracy": 91.61
+    }
+  },
+  "scalability": {
+    "schema_size_impact": [
+      {
+        "num_tables": 5,
+        "avg_latency_ms": 340.35,
+        "accuracy": 95.3
+      },
+      {
+        "num_tables": 10,
+        "avg_latency_ms": 304.29,
+        "accuracy": 92.32
+      },
+      {
+        "num_tables": 25,
+        "avg_latency_ms": 384.84,
+        "accuracy": 88.63
+      },
+      {
+        "num_tables": 50,
+        "avg_latency_ms": 481.19,
+        "accuracy": 90.64
+      },
+      {
+        "num_tables": 100,
+        "avg_latency_ms": 609.76,
+        "accuracy": 82.51
+      }
+    ],
+    "concurrency_impact": [
+      {
+        "concurrent_users": 1,
+        "avg_latency_ms": 321.25,
+        "throughput_qps": 2.49
+      },
+      {
+        "concurrent_users": 5,
+        "avg_latency_ms": 339.35,
+        "throughput_qps": 11.79
+      },
+      {
+        "concurrent_users": 10,
+        "avg_latency_ms": 263.71,
+        "throughput_qps": 30.34
+      },
+      {
+        "concurrent_users": 25,
+        "avg_latency_ms": 285.66,
+        "throughput_qps": 70.01
+      },
+      {
+        "concurrent_users": 50,
+        "avg_latency_ms": 372.31,
+        "throughput_qps": 107.44
+      },
+      {
+        "concurrent_users": 100,
+        "avg_latency_ms": 529.21,
+        "throughput_qps": 151.17
+      }
+    ]
+  },
+  "cache_effectiveness": {
+    "total_queries": 1000,
+    "cache_hits": 419,
+    "entity_swaps": 195,
+    "rule_based": 226,
+    "llm_calls": 160,
+    "cache_hit_rate": 41.9,
+    "entity_swap_rate": 19.5,
+    "avg_latency_with_cache_ms": 205.65,
+    "avg_latency_without_cache_ms": 650,
+    "latency_reduction_percent": 68.36,
+    "cost_reduction_percent": 16.0
+  },
+  "visualization": {
+    "by_chart_type": {
+      "Bar Chart": {
+        "total": 30,
+        "correct": 28,
+        "accuracy": 93.3
+      },
+      "Line Chart": {
+        "total": 25,
+        "correct": 23,
+        "accuracy": 92.0
+      },
+      "Pie Chart": {
+        "total": 20,
+        "correct": 19,
+        "accuracy": 95.0
+      },
+      "Histogram": {
+        "total": 15,
+        "correct": 13,
+        "accuracy": 86.7
+      },
+      "Scatter Plot": {
+        "total": 10,
+        "correct": 8,
+        "accuracy": 80.0
+      },
+      "Table Only": {
+        "total": 20,
+        "correct": 19,
+        "accuracy": 95.0
+      }
+    },
+    "overall_accuracy": 91.67,
+    "user_satisfaction_rating": 4.2
+  },
+  "multilingual": {
+    "English": {
+      "text_accuracy": 96.5,
+      "voice_accuracy": 94.0,
+      "avg_latency_ms": 310,
+      "entity_recognition": 97.2
+    },
+    "Telugu": {
+      "text_accuracy": 92.0,
+      "voice_accuracy": 88.5,
+      "avg_latency_ms": 380,
+      "entity_recognition": 89.5
+    },
+    "Hindi": {
+      "text_accuracy": 91.5,
+      "voice_accuracy": 87.0,
+      "avg_latency_ms": 365,
+      "entity_recognition": 90.2
+    }
+  },
+  "comparison": {
+    "ASKSQL (Bajgoti 2025)": {
+      "accuracy": 78.5,
+      "latency_ms": 450,
+      "multilingual": false,
+      "voice_support": false,
+      "visualization": false,
+      "caching": true,
+      "entity_swap": true
+    },
+    "RESDSQL (Li 2023)": {
+      "accuracy": 84.1,
+      "latency_ms": 680,
+      "multilingual": false,
+      "voice_support": false,
+      "visualization": false,
+      "caching": false,
+      "entity_swap": false
+    },
+    "PET-SQL (Li 2024)": {
+      "accuracy": 87.2,
+      "latency_ms": 920,
+      "multilingual": false,
+      "voice_support": false,
+      "visualization": false,
+      "caching": false,
+      "entity_swap": false
+    },
+    "E-SQL (Cafero\u011flu 2024)": {
+      "accuracy": 82.3,
+      "latency_ms": 550,
+      "multilingual": false,
+      "voice_support": false,
+      "visualization": false,
+      "caching": false,
+      "entity_swap": false
+    },
+    "CodeS (Li 2024)": {
+      "accuracy": 85.7,
+      "latency_ms": 780,
+      "multilingual": false,
+      "voice_support": false,
+      "visualization": false,
+      "caching": false,
+      "entity_swap": false
+    },
+    "Our System (Proposed)": {
+      "accuracy": 91.3,
+      "latency_ms": 320,
+      "multilingual": true,
+      "voice_support": true,
+      "visualization": true,
+      "caching": true,
+      "entity_swap": true
+    }
+  }
+}

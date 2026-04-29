@@ -1,0 +1,254 @@
+{
+  "similarity_check": [
+    {
+      "success": true,
+      "latency_ms": 2100.81,
+      "similar_found": true,
+      "similarity_count": 1,
+      "best_similarity": 1.0
+    },
+    {
+      "success": true,
+      "latency_ms": 2110.37,
+      "similar_found": true,
+      "similarity_count": 1,
+      "best_similarity": 1.0
+    },
+    {
+      "success": true,
+      "latency_ms": 2116.16,
+      "similar_found": true,
+      "similarity_count": 1,
+      "best_similarity": 1.0
+    },
+    {
+      "success": true,
+      "latency_ms": 2101.22,
+      "similar_found": true,
+      "similarity_count": 1,
+      "best_similarity": 1.0
+    },
+    {
+      "success": true,
+      "latency_ms": 2075.09,
+      "similar_found": true,
+      "similarity_count": 1,
+      "best_similarity": 1.0
+    },
+    {
+      "success": true,
+      "latency_ms": 2131.15,
+      "similar_found": true,
+      "similarity_count": 1,
+      "best_similarity": 1.0
+    },
+    {
+      "success": true,
+      "latency_ms": 2103.55,
+      "similar_found": true,
+      "similarity_count": 1,
+      "best_similarity": 1.0
+    },
+    {
+      "success": true,
+      "latency_ms": 2078.33,
+      "similar_found": false,
+      "similarity_count": 0,
+      "best_similarity": 0
+    },
+    {
+      "success": true,
+      "latency_ms": 2500.12,
+      "similar_found": true,
+      "similarity_count": 1,
+      "best_similarity": 1.0
+    },
+    {
+      "success": true,
+      "latency_ms": 2143.92,
+      "similar_found": true,
+      "similarity_count": 1,
+      "best_similarity": 0.7181376585007258
+    },
+    {
+      "success": true,
+      "latency_ms": 2220.88,
+      "similar_found": true,
+      "similarity_count": 4,
+      "best_similarity": 1.0
+    },
+    {
+      "success": true,
+      "latency_ms": 2172.96,
+      "similar_found": true,
+      "similarity_count": 1,
+      "best_similarity": 1.0
+    },
+    {
+      "success": true,
+      "latency_ms": 2169.55,
+      "similar_found": false,
+      "similarity_count": 0,
+      "best_similarity": 0
+    }
+  ],
+  "sql_generation": [
+    {
+      "success": true,
+      "latency_ms": 104870.17,
+      "sql_query": "SELECT * FROM employees LIMIT 100;",
+      "model_used": "ollama"
+    },
+    {
+      "success": true,
+      "latency_ms": 113239.83,
+      "sql_query": "SELECT * FROM employees LIMIT 100;",
+      "model_used": "ollama"
+    },
+    {
+      "success": true,
+      "latency_ms": 111277.29,
+      "sql_query": "SELECT * FROM employees LIMIT 100;",
+      "model_used": "ollama"
+    }
+  ],
+  "sql_execution": [
+    {
+      "success": true,
+      "latency_ms": 2146.08,
+      "row_count": 13,
+      "execution_time": 0.031615
+    },
+    {
+      "success": true,
+      "latency_ms": 2136.76,
+      "row_count": 13,
+      "execution_time": 0.001025
+    },
+    {
+      "success": true,
+      "latency_ms": 2094.23,
+      "row_count": 13,
+      "execution_time": 0.003133
+    }
+  ],
+  "by_language": {
+    "English": [
+      {
+        "success": true,
+        "total_latency": 2100.81
+      },
+      {
+        "success": true,
+        "total_latency": 2110.37
+      },
+      {
+        "success": true,
+        "total_latency": 2116.16
+      },
+      {
+        "success": true,
+        "total_latency": 2101.22
+      },
+      {
+        "success": true,
+        "total_latency": 2075.09
+      },
+      {
+        "success": true,
+        "total_latency": 2131.15
+      },
+      {
+        "success": true,
+        "total_latency": 2103.55
+      },
+      {
+        "success": true,
+        "total_latency": 109094.58
+      }
+    ],
+    "Telugu": [
+      {
+        "success": true,
+        "total_latency": 2500.12
+      },
+      {
+        "success": true,
+        "total_latency": 117520.51
+      },
+      {
+        "success": true,
+        "total_latency": 2220.88
+      }
+    ],
+    "Hindi": [
+      {
+        "success": true,
+        "total_latency": 2172.96
+      },
+      {
+        "success": true,
+        "total_latency": 115541.06999999999
+      }
+    ]
+  },
+  "by_complexity": {
+    "Simple": [
+      {
+        "success": true,
+        "total_latency": 2100.81
+      },
+      {
+        "success": true,
+        "total_latency": 2103.55
+      },
+      {
+        "success": true,
+        "total_latency": 109094.58
+      },
+      {
+        "success": true,
+        "total_latency": 2500.12
+      },
+      {
+        "success": true,
+        "total_latency": 2172.96
+      }
+    ],
+    "Medium": [
+      {
+        "success": true,
+        "total_latency": 2110.37
+      },
+      {
+        "success": true,
+        "total_latency": 2116.16
+      },
+      {
+        "success": true,
+        "total_latency": 2101.22
+      },
+      {
+        "success": true,
+        "total_latency": 2075.09
+      },
+      {
+        "success": true,
+        "total_latency": 2131.15
+      },
+      {
+        "success": true,
+        "total_latency": 117520.51
+      },
+      {
+        "success": true,
+        "total_latency": 2220.88
+      },
+      {
+        "success": true,
+        "total_latency": 115541.06999999999
+      }
+    ],
+    "Complex": []
+  }
+}

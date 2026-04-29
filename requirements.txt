@@ -1,0 +1,37 @@
+# ─── Advanced NL-to-SQL System ───
+# Pinned versions for reproducible builds
+
+# Core
+flask==3.1.1
+flask-cors==5.0.1
+python-dotenv==1.1.0
+requests==2.32.3
+
+# Data
+pandas==2.2.3
+numpy==1.26.4
+openpyxl==3.1.5
+xlsxwriter==3.2.2
+
+# AI / ML
+google-generativeai==0.8.5
+sentence-transformers==3.4.1
+faiss-cpu==1.9.0.post1
+scikit-learn==1.6.1
+
+# Visualisation
+matplotlib==3.10.1
+seaborn==0.13.2
+plotly==6.0.1
+kaleido==0.2.1
+
+# Testing
+pytest==8.3.5
+pytest-cov==6.1.1
+pytest-mock==3.14.0
+
+# Optional (uncomment if needed)
+# flask-limiter==3.8.0
+# streamlit==1.42.2
+# openai==1.68.2
+# python-magic==0.4.27
